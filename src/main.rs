@@ -1,5 +1,8 @@
 use bevy::prelude::*;
 
+mod game;
+use game::GamePlugin;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins.set(WindowPlugin {
@@ -11,10 +14,6 @@ fn main() {
             ..default()
         }))
         .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.12)))
-        .add_systems(Startup, setup)
+        .add_plugins(GamePlugin)
         .run();
-}
-
-fn setup(mut commands: Commands) {
-    commands.spawn(Camera2d);
 }

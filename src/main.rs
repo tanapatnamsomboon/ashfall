@@ -1,9 +1,10 @@
 use bevy::prelude::*;
 
+mod camera;
 mod game;
 mod iso;
-mod world;
 mod player;
+mod world;
 
 use game::GamePlugin;
 

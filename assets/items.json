@@ -1,0 +1,22 @@
+{
+  "canned_food": {
+    "name": "Canned Food",
+    "kind": "food",
+    "restore": 40.0,
+    "color": [
+      0.85,
+      0.75,
+      0.35
+    ]
+  },
+  "water_bottle": {
+    "name": "Water Bottle",
+    "kind": "water",
+    "restore": 40.0,
+    "color": [
+      0.30,
+      0.55,
+      0.90
+    ]
+  }
+}

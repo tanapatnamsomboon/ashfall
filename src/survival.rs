@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::item::{Inventory, ItemKind};
+use crate::item::{ConsumeKind, Inventory, ItemDb};
 use crate::player::Player;
 
 #[derive(Component)]
@@ -49,8 +49,6 @@ pub enum Consume {
 }
 
 const STARVATION_DAMAGE: f32 = 2.0;
-const EAT_AMOUNT: f32 = 40.0;
-const DRINK_AMOUNT: f32 = 40.0;
 
 pub struct SurvivalPlugin;
 
@@ -92,19 +90,26 @@ fn read_consume_input(keys: Res<ButtonInput<KeyCode>>, mut writer: MessageWriter
 
 fn apply_consume(
     mut reader: MessageReader<Consume>,
+    db: Res<ItemDb>,
     player: Single<(&mut Needs, &mut Inventory), With<Player>>,
 ) {
     let (mut needs, mut inventory) = player.into_inner();
     for action in reader.read() {
         let want = match action {
-            Consume::Eat => ItemKind::Food,
-            Consume::Drink => ItemKind::Water,
+            Consume::Eat => ConsumeKind::Food,
+            Consume::Drink => ConsumeKind::Water,
         };
-        if let Some(pos) = inventory.items.iter().position(|&it| it == want) {
-            inventory.items.remove(pos);
-            match want {
-                ItemKind::Food => needs.hunger = (needs.hunger + EAT_AMOUNT).min(100.0),
-                ItemKind::Water => needs.thirst = (needs.thirst + DRINK_AMOUNT).min(100.0),
+        let found = inventory
+            .items
+            .iter()
+            .position(|id| db.0.get(id).map_or(false, |d| d.kind == want));
+        if let Some(pos) = found {
+            let id = inventory.items.remove(pos);
+            if let Some(def) = db.0.get(&id) {
+                match def.kind {
+                    ConsumeKind::Food => needs.hunger = (needs.hunger + def.restore).min(100.0),
+                    ConsumeKind::Water => needs.thirst = (needs.thirst + def.restore).min(100.0),
+                }
             }
         }
     }
@@ -132,21 +137,22 @@ fn spawn_hud(mut commands: Commands) {
     ));
 }
 
+fn count_kind(inventory: &Inventory, db: &ItemDb, kind: ConsumeKind) -> usize {
+    inventory
+        .items
+        .iter()
+        .filter(|id| db.0.get(*id).map_or(false, |d| d.kind == kind))
+        .count()
+}
+
 fn update_hud(
     player: Single<(&Needs, &Health, &Inventory), With<Player>>,
+    db: Res<ItemDb>,
     hud: Single<&mut Text, With<NeedsHud>>,
 ) {
     let (needs, health, inventory) = player.into_inner();
-    let food = inventory
-        .items
-        .iter()
-        .filter(|&&i| i == ItemKind::Food)
-        .count();
-    let water = inventory
-        .items
-        .iter()
-        .filter(|&&i| i == ItemKind::Water)
-        .count();
+    let food = count_kind(inventory, &db, ConsumeKind::Food);
+    let water = count_kind(inventory, &db, ConsumeKind::Water);
     let mut text = hud.into_inner();
     text.0 = format!(
         "Health: {:.0}/{:.0}\nHunger: {:.0}\nThirst: {:.0}\nEnergy: {:.0}\n\nFood: {food}   Water: {water}\n[E] eat  [Q] drink",

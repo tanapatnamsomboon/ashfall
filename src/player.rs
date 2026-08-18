@@ -1,7 +1,9 @@
 use bevy::prelude::*;
-use crate::iso::{grid_to_world, DepthSorted, TILE_HEIGHT};
 
-const PLAYER_SPEED : f32 = 100.0;
+use crate::iso::{DepthSorted, TILE_HEIGHT, grid_to_world, world_to_grid};
+use crate::world::WorldGrid;
+
+const PLAYER_SPEED: f32 = 100.0;
 const PLAYER_Z: f32 = 1.0;
 
 #[derive(Component)]
@@ -41,10 +43,18 @@ fn read_movement_input(
 ) {
     let mut dir = Vec2::ZERO;
 
-    if keys.pressed(KeyCode::KeyW) { dir.y += 1.0; }
-    if keys.pressed(KeyCode::KeyS) { dir.y -= 1.0; }
-    if keys.pressed(KeyCode::KeyA) { dir.x -= 1.0; }
-    if keys.pressed(KeyCode::KeyD) { dir.x += 1.0; }
+    if keys.pressed(KeyCode::KeyW) {
+        dir.y += 1.0;
+    }
+    if keys.pressed(KeyCode::KeyS) {
+        dir.y -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyA) {
+        dir.x -= 1.0;
+    }
+    if keys.pressed(KeyCode::KeyD) {
+        dir.x += 1.0;
+    }
 
     let mut intent = intent.into_inner();
     intent.0 = dir.normalize_or_zero();
@@ -52,9 +62,31 @@ fn read_movement_input(
 
 fn apply_movement(
     time: Res<Time>,
+    grid: Res<WorldGrid>,
     player: Single<(&MoveIntent, &mut Transform), With<Player>>,
 ) {
     let (intent, mut transform) = player.into_inner();
     let step = intent.0 * PLAYER_SPEED * time.delta_secs();
-    transform.translation += step.extend(0.0);
+    let pos = transform.translation.truncate();
+
+    let mut new = pos;
+
+    let try_x = Vec2::new(pos.x + step.x, pos.y);
+    if !tile_blocked(try_x, &grid) {
+        new.x = try_x.x;
+    }
+
+    let try_y = Vec2::new(new.x, pos.y + step.y);
+    if !tile_blocked(try_y, &grid) {
+        new.y = try_y.y;
+    }
+
+    transform.translation.x = new.x;
+    transform.translation.y = new.y;
+}
+
+fn tile_blocked(world_pos: Vec2, grid: &WorldGrid) -> bool {
+    let g = world_to_grid(world_pos, 0.0);
+    let tile = IVec2::new(g.x.floor() as i32, g.y.floor() as i32);
+    grid.is_blocked(tile)
 }

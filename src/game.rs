@@ -1,7 +1,8 @@
+use bevy::prelude::*;
+
 use crate::iso::IsoPlugin;
 use crate::player::PlayerPlugin;
 use crate::world::WorldPlugin;
-use bevy::prelude::*;
 
 pub struct GamePlugin;
 

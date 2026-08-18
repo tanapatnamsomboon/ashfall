@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::iso::{DepthSorted, TILE_HEIGHT, grid_to_world, world_to_grid};
+use crate::item::Inventory;
 use crate::survival::{Health, Needs};
 use crate::world::WorldGrid;
 
@@ -33,6 +34,7 @@ fn spawn_player(
         MoveIntent::default(),
         Needs::default(),
         Health::default(),
+        Inventory::default(),
         DepthSorted { anchor_offset: 0.0 },
         Mesh2d(meshes.add(Circle::new(TILE_HEIGHT * 0.35))),
         MeshMaterial2d(materials.add(Color::srgb(0.90, 0.50, 0.20))),

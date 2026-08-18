@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::camera::CameraPlugin;
 use crate::iso::IsoPlugin;
+use crate::item::ItemPlugin;
 use crate::player::PlayerPlugin;
 use crate::survival::SurvivalPlugin;
 use crate::world::WorldPlugin;
@@ -16,6 +17,7 @@ impl Plugin for GamePlugin {
             WorldPlugin,
             PlayerPlugin,
             SurvivalPlugin,
+            ItemPlugin,
         ));
     }
 }

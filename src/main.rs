@@ -3,6 +3,7 @@ use bevy::prelude::*;
 mod camera;
 mod game;
 mod iso;
+mod item;
 mod player;
 mod survival;
 mod world;

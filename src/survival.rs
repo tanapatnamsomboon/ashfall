@@ -1,5 +1,6 @@
 use bevy::prelude::*;
 
+use crate::item::{Inventory, ItemKind};
 use crate::player::Player;
 
 #[derive(Component)]
@@ -89,15 +90,21 @@ fn read_consume_input(keys: Res<ButtonInput<KeyCode>>, mut writer: MessageWriter
     }
 }
 
-fn apply_consume(mut reader: MessageReader<Consume>, needs: Single<&mut Needs, With<Player>>) {
-    let mut needs = needs.into_inner();
+fn apply_consume(
+    mut reader: MessageReader<Consume>,
+    player: Single<(&mut Needs, &mut Inventory), With<Player>>,
+) {
+    let (mut needs, mut inventory) = player.into_inner();
     for action in reader.read() {
-        match action {
-            Consume::Eat => {
-                needs.hunger = (needs.hunger + EAT_AMOUNT).min(100.0);
-            }
-            Consume::Drink => {
-                needs.thirst = (needs.thirst + DRINK_AMOUNT).min(100.0);
+        let want = match action {
+            Consume::Eat => ItemKind::Food,
+            Consume::Drink => ItemKind::Water,
+        };
+        if let Some(pos) = inventory.items.iter().position(|&it| it == want) {
+            inventory.items.remove(pos);
+            match want {
+                ItemKind::Food => needs.hunger = (needs.hunger + EAT_AMOUNT).min(100.0),
+                ItemKind::Water => needs.thirst = (needs.thirst + DRINK_AMOUNT).min(100.0),
             }
         }
     }
@@ -126,13 +133,23 @@ fn spawn_hud(mut commands: Commands) {
 }
 
 fn update_hud(
-    player: Single<(&Needs, &Health), With<Player>>,
+    player: Single<(&Needs, &Health, &Inventory), With<Player>>,
     hud: Single<&mut Text, With<NeedsHud>>,
 ) {
-    let (needs, health) = player.into_inner();
+    let (needs, health, inventory) = player.into_inner();
+    let food = inventory
+        .items
+        .iter()
+        .filter(|&&i| i == ItemKind::Food)
+        .count();
+    let water = inventory
+        .items
+        .iter()
+        .filter(|&&i| i == ItemKind::Water)
+        .count();
     let mut text = hud.into_inner();
     text.0 = format!(
-        "Health: {:.0}/{:.0}\nHunger: {:.0}\nThirst: {:.0}\nEnergy: {:.0}\n[E] eat  [Q] drink",
+        "Health: {:.0}/{:.0}\nHunger: {:.0}\nThirst: {:.0}\nEnergy: {:.0}\n\nFood: {food}   Water: {water}\n[E] eat  [Q] drink",
         health.current, health.max, needs.hunger, needs.thirst, needs.energy
     );
 }

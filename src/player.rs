@@ -1,7 +1,7 @@
 use bevy::prelude::*;
-use crate::iso::{grid_to_world, TILE_HEIGHT};
+use crate::iso::{grid_to_world, DepthSorted, TILE_HEIGHT};
 
-const PLAYER_SPEED : f32 = 200.0;
+const PLAYER_SPEED : f32 = 100.0;
 const PLAYER_Z: f32 = 1.0;
 
 #[derive(Component)]
@@ -28,6 +28,7 @@ fn spawn_player(
     commands.spawn((
         Player,
         MoveIntent::default(),
+        DepthSorted { anchor_offset: 0.0 },
         Mesh2d(meshes.add(Circle::new(TILE_HEIGHT * 0.35))),
         MeshMaterial2d(materials.add(Color::srgb(0.90, 0.50, 0.20))),
         Transform::from_translation(pos.extend(PLAYER_Z)),

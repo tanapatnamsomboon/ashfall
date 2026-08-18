@@ -4,6 +4,18 @@ pub const TILE_WIDTH: f32 = 64.0;
 pub const TILE_HEIGHT: f32 = 32.0;
 pub const TILE_Z_STEP: f32 = 32.0;
 
+#[derive(Component)]
+pub struct DepthSorted {
+    pub anchor_offset: f32,
+}
+
+fn depth_sort(mut query: Query<(&mut Transform, &DepthSorted)>) {
+    for (mut transform, sorted) in &mut query {
+        let base_y = transform.translation.y + sorted.anchor_offset;
+        transform.translation.z = 10.0 - base_y * 0.1;
+    }
+}
+
 pub fn grid_to_world(x: f32, y: f32, z: f32) -> Vec2 {
     Vec2::new(
         (x - y) * (TILE_WIDTH / 2.0),
@@ -22,7 +34,7 @@ pub struct IsoPlugin;
 
 impl Plugin for IsoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, highlight_hovered_tile);
+        app.add_systems(Update, (highlight_hovered_tile, depth_sort));
     }
 }
 

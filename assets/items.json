@@ -2,7 +2,9 @@
   "canned_food": {
     "name": "Canned Food",
     "kind": "food",
-    "restore": 40.0,
+    "restore": {
+      "hunger": 40
+    },
     "color": [
       0.85,
       0.75,
@@ -12,11 +14,40 @@
   "water_bottle": {
     "name": "Water Bottle",
     "kind": "water",
-    "restore": 40.0,
+    "restore": {
+      "thirst": 40
+    },
     "color": [
       0.30,
       0.55,
       0.90
+    ]
+  },
+  "meal": {
+    "name": "Hot Meal",
+    "kind": "food",
+    "restore": {
+      "hunger": 55,
+      "thirst": 10,
+      "energy": 15
+    },
+    "color": [
+      0.80,
+      0.45,
+      0.30
+    ]
+  },
+  "energy_drink": {
+    "name": "Energy Drink",
+    "kind": "water",
+    "restore": {
+      "thirst": 25,
+      "energy": 40
+    },
+    "color": [
+      0.55,
+      0.85,
+      0.35
     ]
   }
 }

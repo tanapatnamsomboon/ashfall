@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::item::{ConsumeKind, Inventory, ItemDb};
+use crate::item::{ConsumeKind, Inventory, ItemDb, Restore};
 use crate::player::Player;
 
 #[derive(Component)]
@@ -88,12 +88,19 @@ fn read_consume_input(keys: Res<ButtonInput<KeyCode>>, mut writer: MessageWriter
     }
 }
 
+fn apply_restore(r: &Restore, needs: &mut Needs, health: &mut Health) {
+    needs.hunger = (needs.hunger + r.hunger).min(100.0);
+    needs.thirst = (needs.thirst + r.thirst).min(100.0);
+    needs.energy = (needs.energy + r.energy).min(100.0);
+    health.current = (health.current + r.health).min(health.max);
+}
+
 fn apply_consume(
     mut reader: MessageReader<Consume>,
     db: Res<ItemDb>,
-    player: Single<(&mut Needs, &mut Inventory), With<Player>>,
+    player: Single<(&mut Needs, &mut Health, &mut Inventory), With<Player>>,
 ) {
-    let (mut needs, mut inventory) = player.into_inner();
+    let (mut needs, mut health, mut inventory) = player.into_inner();
     for action in reader.read() {
         let want = match action {
             Consume::Eat => ConsumeKind::Food,
@@ -106,10 +113,7 @@ fn apply_consume(
         if let Some(pos) = found {
             let id = inventory.items.remove(pos);
             if let Some(def) = db.0.get(&id) {
-                match def.kind {
-                    ConsumeKind::Food => needs.hunger = (needs.hunger + def.restore).min(100.0),
-                    ConsumeKind::Water => needs.thirst = (needs.thirst + def.restore).min(100.0),
-                }
+                apply_restore(&def.restore, &mut needs, &mut health)
             }
         }
     }

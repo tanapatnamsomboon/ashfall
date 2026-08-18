@@ -12,11 +12,24 @@ pub enum ConsumeKind {
     Water,
 }
 
+#[derive(Deserialize, Clone, Default)]
+pub struct Restore {
+    #[serde(default)]
+    pub hunger: f32,
+    #[serde(default)]
+    pub thirst: f32,
+    #[serde(default)]
+    pub energy: f32,
+    #[serde(default)]
+    pub health: f32,
+}
+
 #[derive(Deserialize, Clone)]
 pub struct ItemDef {
     pub name: String,
     pub kind: ConsumeKind,
-    pub restore: f32,
+    #[serde(default)]
+    pub restore: Restore,
     pub color: [f32; 3],
 }
 

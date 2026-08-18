@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::iso::{DepthSorted, TILE_HEIGHT, grid_to_world, world_to_grid};
+use crate::survival::Needs;
 use crate::world::WorldGrid;
 
 const PLAYER_SPEED: f32 = 100.0;
@@ -30,6 +31,7 @@ fn spawn_player(
     commands.spawn((
         Player,
         MoveIntent::default(),
+        Needs::default(),
         DepthSorted { anchor_offset: 0.0 },
         Mesh2d(meshes.add(Circle::new(TILE_HEIGHT * 0.35))),
         MeshMaterial2d(materials.add(Color::srgb(0.90, 0.50, 0.20))),

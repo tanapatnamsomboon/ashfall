@@ -4,6 +4,7 @@ mod camera;
 mod game;
 mod iso;
 mod player;
+mod survival;
 mod world;
 
 use game::GamePlugin;

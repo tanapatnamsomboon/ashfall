@@ -44,11 +44,12 @@ pub struct Inventory {
     pub items: Vec<String>,
 }
 
-const ITEM_SPAWNS: &[(i32, i32, &str)] = &[
-    (7, 5, "canned_food"),
-    (6, 7, "water_bottle"),
-    (8, 8, "canned_food"),
-    (2, 8, "water_bottle"),
+const ITEM_SPAWNS: &[(f32, f32, &str)] = &[
+    (7.3, 5.8, "canned_food"),
+    (6.0, 7.4, "water_bottle"),
+    (8.2, 8.1, "meal"),
+    (2.7, 8.4, "energy_drink"),
+    (4.5, 4.5, "canned_food"),
 ];
 
 const PICKUP_RADIUS: f32 = 20.0;
@@ -80,7 +81,7 @@ fn spawn_items(
     for &(x, y, id) in ITEM_SPAWNS {
         let def = db.0.get(id).expect("missing ID in items.json");
         let color = Color::srgb(def.color[0], def.color[1], def.color[2]);
-        let pos = grid_to_world(x as f32 + 0.5, y as f32 + 0.5, 0.0);
+        let pos = grid_to_world(x as f32, y as f32, 0.0);
         commands.spawn((
             Item(id.to_string()),
             Mesh2d(mush.clone()),

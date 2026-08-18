@@ -3,6 +3,7 @@ use bevy::prelude::*;
 mod game;
 mod iso;
 mod world;
+mod player;
 
 use game::GamePlugin;
 

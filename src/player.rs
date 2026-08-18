@@ -66,27 +66,28 @@ fn apply_movement(
     player: Single<(&MoveIntent, &mut Transform), With<Player>>,
 ) {
     let (intent, mut transform) = player.into_inner();
-    let step = intent.0 * PLAYER_SPEED * time.delta_secs();
-    let pos = transform.translation.truncate();
 
-    let mut new = pos;
+    let world_step = intent.0 * PLAYER_SPEED * time.delta_secs();
+    let grid_step = world_to_grid(world_step, 0.0);
 
-    let try_x = Vec2::new(pos.x + step.x, pos.y);
-    if !tile_blocked(try_x, &grid) {
-        new.x = try_x.x;
+    let cur = world_to_grid(transform.translation.truncate(), 0.0);
+
+    let mut next = cur;
+    let try_x = Vec2::new(cur.x + grid_step.x, cur.y);
+    if !grid.is_blocked(tile_of(try_x)) {
+        next.x = try_x.x;
     }
 
-    let try_y = Vec2::new(new.x, pos.y + step.y);
-    if !tile_blocked(try_y, &grid) {
-        new.y = try_y.y;
+    let try_y = Vec2::new(next.x, cur.y + grid_step.y);
+    if !grid.is_blocked(tile_of(try_y)) {
+        next.y = try_y.y;
     }
 
-    transform.translation.x = new.x;
-    transform.translation.y = new.y;
+    let world = grid_to_world(next.x, next.y, 0.0);
+    transform.translation.x = world.x;
+    transform.translation.y = world.y;
 }
 
-fn tile_blocked(world_pos: Vec2, grid: &WorldGrid) -> bool {
-    let g = world_to_grid(world_pos, 0.0);
-    let tile = IVec2::new(g.x.floor() as i32, g.y.floor() as i32);
-    grid.is_blocked(tile)
+fn tile_of(grid_pos: Vec2) -> IVec2 {
+    IVec2::new(grid_pos.x.floor() as i32, grid_pos.y.floor() as i32)
 }

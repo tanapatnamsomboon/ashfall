@@ -22,28 +22,7 @@ pub struct IsoPlugin;
 
 impl Plugin for IsoPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (draw_iso_grid, highlight_hovered_tile));
-    }
-}
-
-fn draw_iso_grid(mut gizmos: Gizmos) {
-    let n = 10;
-    let color = Color::srgb(0.25, 0.25, 0.30);
-
-    for x in 0..=n {
-        gizmos.line_2d(
-            grid_to_world(x as f32, 0.0, 0.0),
-            grid_to_world(x as f32, n as f32, 0.0),
-            color,
-        );
-    }
-
-    for y in 0..=n {
-        gizmos.line_2d(
-            grid_to_world(0.0, y as f32, 0.0),
-            grid_to_world(n as f32, y as f32, 0.0),
-            color,
-        );
+        app.add_systems(Update, highlight_hovered_tile);
     }
 }
 

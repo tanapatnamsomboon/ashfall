@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 mod game;
 mod iso;
+mod world;
 
 use game::GamePlugin;
 

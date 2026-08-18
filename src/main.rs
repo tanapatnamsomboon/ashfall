@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 
 mod game;
+mod iso;
+
 use game::GamePlugin;
 
 fn main() {

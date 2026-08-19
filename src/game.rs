@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::camera::CameraPlugin;
+use crate::daynight::DayNightPlugin;
 use crate::iso::IsoPlugin;
 use crate::item::ItemPlugin;
 use crate::player::PlayerPlugin;
@@ -20,6 +21,7 @@ impl Plugin for GamePlugin {
             PlayerPlugin,
             SurvivalPlugin,
             ItemPlugin,
+            DayNightPlugin,
         ));
     }
 }

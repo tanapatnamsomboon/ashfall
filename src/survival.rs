@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::item::{ConsumeKind, Inventory, ItemDb, Restore};
 use crate::player::Player;
+use crate::state::GameState;
 
 #[derive(Component)]
 pub struct Needs {
@@ -56,6 +57,7 @@ impl Plugin for SurvivalPlugin {
     fn build(&self, app: &mut App) {
         app.add_message::<Consume>()
             .add_systems(Startup, spawn_hud)
+            .add_systems(Update, update_hud)
             .add_systems(
                 Update,
                 (
@@ -63,10 +65,13 @@ impl Plugin for SurvivalPlugin {
                     read_consume_input,
                     apply_consume,
                     apply_starvation,
-                    update_hud,
                 )
-                    .chain(),
-            );
+                    .chain()
+                    .run_if(in_state(GameState::Playing)),
+            )
+            .add_systems(OnEnter(GameState::Dead), show_death_screen)
+            .add_systems(OnExit(GameState::Dead), despawn_death_screen)
+            .add_systems(Update, restart.run_if(in_state(GameState::Dead)));
     }
 }
 
@@ -162,4 +167,55 @@ fn update_hud(
         "Health: {:.0}/{:.0}\nHunger: {:.0}\nThirst: {:.0}\nEnergy: {:.0}\n\nFood: {food}   Water: {water}\n[E] eat  [Q] drink",
         health.current, health.max, needs.hunger, needs.thirst, needs.energy
     );
+}
+
+fn check_death(health: Single<&Health, With<Player>>, mut next: ResMut<NextState<GameState>>) {
+    if health.current <= 0.0 {
+        next.set(GameState::Dead);
+    }
+}
+
+#[derive(Component)]
+struct DeathScreen;
+
+fn show_death_screen(mut commands: Commands) {
+    commands
+        .spawn((
+            DeathScreen,
+            Node {
+                position_type: PositionType::Absolute,
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                ..default()
+            },
+            BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.6)),
+        ))
+        .with_children(|parent| {
+            parent.spawn((
+                Text::new("YOU DIED\n [R] restart"),
+                TextFont::from_font_size(44.0),
+                TextColor(Color::srgb(0.85, 0.20, 0.20)),
+            ));
+        });
+}
+
+fn despawn_death_screen(mut commands: Commands, q: Query<Entity, With<DeathScreen>>) {
+    for e in &q {
+        commands.entity(e).despawn();
+    }
+}
+
+fn restart(
+    keys: Res<ButtonInput<KeyCode>>,
+    player: Single<(&mut Needs, &mut Health), With<Player>>,
+    mut next: ResMut<NextState<GameState>>,
+) {
+    if keys.just_pressed(KeyCode::KeyR) {
+        let (mut needs, mut health) = player.into_inner();
+        *needs = Needs::default();
+        *health = Health::default();
+        next.set(GameState::Playing);
+    }
 }

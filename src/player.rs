@@ -2,6 +2,7 @@ use bevy::prelude::*;
 
 use crate::iso::{DepthSorted, TILE_HEIGHT, grid_to_world, world_to_grid};
 use crate::item::Inventory;
+use crate::state::GameState;
 use crate::survival::{Health, Needs};
 use crate::world::WorldGrid;
 
@@ -18,8 +19,12 @@ pub struct PlayerPlugin;
 
 impl Plugin for PlayerPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_player)
-            .add_systems(Update, (read_movement_input, apply_movement).chain());
+        app.add_systems(Startup, spawn_player).add_systems(
+            Update,
+            (read_movement_input, apply_movement)
+                .chain()
+                .run_if(in_state(GameState::Playing)),
+        );
     }
 }
 

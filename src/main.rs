@@ -5,6 +5,7 @@ mod game;
 mod iso;
 mod item;
 mod player;
+mod state;
 mod survival;
 mod world;
 

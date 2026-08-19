@@ -65,6 +65,7 @@ impl Plugin for SurvivalPlugin {
                     read_consume_input,
                     apply_consume,
                     apply_starvation,
+                    check_death,
                 )
                     .chain()
                     .run_if(in_state(GameState::Playing)),

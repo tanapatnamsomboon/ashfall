@@ -73,11 +73,13 @@ fn read_movement_input(
 fn apply_movement(
     time: Res<Time>,
     grid: Res<WorldGrid>,
-    player: Single<(&MoveIntent, &mut Transform), With<Player>>,
+    player: Single<(&MoveIntent, &Needs, &mut Transform), With<Player>>,
 ) {
-    let (intent, mut transform) = player.into_inner();
+    let (intent, needs, mut transform) = player.into_inner();
 
-    let world_step = intent.0 * PLAYER_SPEED * time.delta_secs();
+    let energy_factor = 0.5 + 0.5 * (needs.energy / 100.0);
+    let world_step = intent.0 * PLAYER_SPEED * energy_factor * time.delta_secs();
+
     let grid_step = world_to_grid(world_step, 0.0);
 
     let cur = world_to_grid(transform.translation.truncate(), 0.0);
